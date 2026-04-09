@@ -1,0 +1,507 @@
+# System Architecture - Customer Registration Feature
+
+## Overall System Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        Banking Doc System                        │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                   │
+│  ┌────────────────────┐         ┌────────────────────────────┐  │
+│  │   UI Layer         │         │   Controller Layer         │  │
+│  │ (JavaFX Views)     │         │                            │  │
+│  │                    │         │  • CustomerController      │  │
+│  │ • LoginView        │◄───────►│  • UserController (NEW)    │  │
+│  │ • DashboardView    │         │  • DocumentController      │  │
+│  │ • CustomerView  ◄──┤         │  • TransactionController   │  │
+│  │ • DocumentView     │         │  • AccountController       │  │
+│  │ • UserMgmtView     │         └────────────────────────────┘  │
+│  │                    │                     ▲                    │
+│  └────────────────────┘                     │                    │
+│                                             │                    │
+│  ┌────────────────────────────────────────┴──────────────────┐  │
+│  │              DAO Layer (Data Access)                       │  │
+│  ├────────────────────────────────────────────────────────────┤  │
+│  │                                                             │  │
+│  │ • CustomerDAO                                              │  │
+│  │ • UserDAO (ENHANCED)  ◄─── getUserByUsername() [NEW]      │  │
+│  │ • DocumentDAO                                              │  │
+│  │ • TransactionDAO                                           │  │
+│  │ • AccountDAO                                               │  │
+│  │                                                             │  │
+│  └────────────────────────────────────────────────────────────┘  │
+│                             ▲                                    │
+│                             │                                    │
+│  ┌────────────────────────────────────────────────────────────┐  │
+│  │         Database Connection Layer                           │  │
+│  ├────────────────────────────────────────────────────────────┤  │
+│  │                                                             │  │
+│  │  • DatabaseConnection.getConnection()                      │  │
+│  │  • Prepared Statements for SQL Injection Prevention        │  │
+│  │  • Connection Pooling                                      │  │
+│  │                                                             │  │
+│  └────────────────────────────────────────────────────────────┘  │
+│                             ▲                                    │
+│                             │                                    │
+│                             ▼                                    │
+│  ┌────────────────────────────────────────────────────────────┐  │
+│  │         MySQL Database (banking_system)                     │  │
+│  ├────────────────────────────────────────────────────────────┤  │
+│  │                                                             │  │
+│  │ Tables:                                                     │  │
+│  │  • users (ENHANCED USAGE)                                  │  │
+│  │  • customers (ENHANCED USAGE)                              │  │
+│  │  • roles                                                    │  │
+│  │  • documents                                                │  │
+│  │  • ...                                                      │  │
+│  │                                                             │  │
+│  └────────────────────────────────────────────────────────────┘  │
+│                                                                   │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+## Customer Registration Flow Architecture
+
+### High-Level Flow
+
+```
+┌────────────────────────────────────────────────────────────┐
+│                  Admin/Staff User                           │
+└────────────┬─────────────────────────────────────────────┘
+             │
+             │ 1. Click "+ Add Customer"
+             ▼
+┌────────────────────────────────────────────────────────────┐
+│             CustomerView.showForm()                         │
+│                                                             │
+│  ┌─────────────────────────────────────────────────────┐  │
+│  │  Dialog opens with:                                 │  │
+│  │  • Customer Info Fields (Name, Phone, Email, etc)  │  │
+│  │  • Login Credential Fields (Username, Pwd, etc)    │  │
+│  └─────────────────────────────────────────────────────┘  │
+└────────────┬─────────────────────────────────────────────┘
+             │
+             │ 2. Fill form & Click Save
+             ▼
+┌────────────────────────────────────────────────────────────┐
+│             Validation Layer                                │
+│                                                             │
+│  • Phone: 7-15 digits regex                                │
+│  • Email: must contain @                                   │
+│  • Username: required field                                │
+│  • Password: min 6 chars & confirmation match              │
+│                                                             │
+│  If validation fails ──► Show error & return               │
+└────────────┬─────────────────────────────────────────────┘
+             │ (validation passed)
+             ▼
+┌────────────────────────────────────────────────────────────┐
+│    Phase 1: Create User Account                             │
+│                                                             │
+│    userController.add(User)                                │
+│           ▼                                                │
+│    UserDAO.insertUser(User)                                │
+│           ▼                                                │
+│    • Hash password with BCrypt                             │
+│    • INSERT INTO users                                     │
+│    • username (UNIQUE check)                               │
+│    • password_hash (encrypted)                             │
+│    • email (UNIQUE check)                                  │
+│    • full_name (from customer name)                        │
+│    • role_id = 3 (Customer)                                │
+│           ▼                                                │
+│    User created successfully ✅                            │
+│                                                             │
+│  If fails (duplicate username) ──► Show error & return     │
+└────────────┬─────────────────────────────────────────────┘
+             │
+             │ 3. Retrieve newly created User
+             ▼
+┌────────────────────────────────────────────────────────────┐
+│    Retrieve Created User                                    │
+│                                                             │
+│    userController.getUserByUsername(username)  [NEW]       │
+│           ▼                                                │
+│    UserDAO.getUserByUsername(username)  [NEW]              │
+│           ▼                                                │
+│    SELECT user_id FROM users WHERE username = ?            │
+│           ▼                                                │
+│    User object returned with user_id ✅                    │
+│                                                             │
+│  If fails ──► Show error & return                          │
+└────────────┬─────────────────────────────────────────────┘
+             │
+             │ 4. Link User to Customer
+             ▼
+┌────────────────────────────────────────────────────────────┐
+│    Phase 2: Create Customer Record                          │
+│                                                             │
+│    customer.setUserId(user.getUserId())                    │
+│    customerController.add(Customer)                        │
+│           ▼                                                │
+│    CustomerDAO.insertCustomer(Customer)                    │
+│           ▼                                                │
+│    INSERT INTO customers                                  │
+│    • user_id = [from Phase 1]  (FK)                        │
+│    • full_name (from form)                                 │
+│    • address (from form)                                   │
+│    • phone (from form)                                     │
+│    • date_of_birth (from form)                             │
+│           ▼                                                │
+│    Customer created successfully ✅                        │
+│                                                             │
+│  If fails ──► Show error & return                          │
+└────────────┬─────────────────────────────────────────────┘
+             │
+             │ 5. Success & Refresh
+             ▼
+┌────────────────────────────────────────────────────────────┐
+│    Success ✅                                               │
+│                                                             │
+│    • Show success message with username                    │
+│    • Refresh customer list                                 │
+│    • New customer appears in table                         │
+│    • Customer can now login                                │
+└────────────────────────────────────────────────────────────┘
+```
+
+## Class Diagram
+
+```
+┌──────────────────────────────────────────┐
+│          CustomerView                     │
+├──────────────────────────────────────────┤
+│ - root: BorderPane                        │
+│ - table: TableView<Customer>              │
+│ - controller: CustomerController          │
+│ - userController: UserController  [NEW]   │
+├──────────────────────────────────────────┤
+│ - showForm(Customer)  [ENHANCED]          │
+│ - buildTable()                            │
+│ - refreshTable(List)                      │
+└──────────────────────────────────────────┘
+         │
+         │ uses
+         ▼
+┌──────────────────────────────────────────┐    ┌─────────────────────────────┐
+│     CustomerController                    │    │   UserController [ENHANCED] │
+├──────────────────────────────────────────┤    ├─────────────────────────────┤
+│ - dao: CustomerDAO                        │    │ - dao: UserDAO              │
+├──────────────────────────────────────────┤    ├─────────────────────────────┤
+│ + add(Customer): boolean                  │    │ + add(User): boolean        │
+│ + update(Customer): boolean               │    │ + update(User): boolean     │
+│ + delete(int): boolean                    │    │ + delete(int): boolean      │
+│ + getAll(): List<Customer>                │    │ + getUserByUsername()  [NEW]│
+│ + search(String): List<Customer>          │    └─────────────────────────────┘
+└──────────────────────────────────────────┘
+         │
+         │ data access
+         ▼
+┌──────────────────────────────────────────┐    ┌─────────────────────────────┐
+│     CustomerDAO                           │    │   UserDAO [ENHANCED]        │
+├──────────────────────────────────────────┤    ├─────────────────────────────┤
+│ + insertCustomer(Customer): boolean       │    │ + insertUser(User): boolean │
+│ + updateCustomer(Customer): boolean       │    │ + updateUser(User): boolean │
+│ + deleteCustomer(int): boolean            │    │ + deleteUser(int): boolean  │
+│ + getAllCustomers(): List<Customer>       │    │ + authenticate(): User      │
+│ + searchCustomers(String)                 │    │ + getUserByUsername() [NEW] │
+└──────────────────────────────────────────┘    └─────────────────────────────┘
+         │                                               │
+         │ queries                                       │ queries
+         ▼                                               ▼
+┌─────────────────────────────────────────────────────────────┐
+│         DatabaseConnection                                  │
+├─────────────────────────────────────────────────────────────┤
+│ + getConnection(): Connection                               │
+└─────────────────────────────────────────────────────────────┘
+         │
+         │ connects
+         ▼
+┌─────────────────────────────────────────────────────────────┐
+│         MySQL Database (banking_system)                      │
+├─────────────────────────────────────────────────────────────┤
+│ users table:           customers table:                      │
+│ ├─ user_id (PK)       ├─ customer_id (PK)                  │
+│ ├─ username (UNIQUE)  ├─ user_id (FK) ◄──────┐            │
+│ ├─ password_hash      ├─ full_name            │            │
+│ ├─ email (UNIQUE)     ├─ address              │ (1:1)      │
+│ ├─ full_name          ├─ phone                │            │
+│ ├─ role_id (FK)       └─ date_of_birth        │            │
+│ └─ is_active                                  └────────────┘
+│                                                              │
+│ roles table:                                                │
+│ ├─ role_id (PK)                                            │
+│ └─ role_name (e.g., "Customer")                            │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## Data Flow Diagram
+
+### From Form to Database
+
+```
+User Input (Dialog Form)
+    │
+    ├─ nameField        ──────┐
+    ├─ phoneField       ──────┤
+    ├─ emailField       ──────┤──► Customer Object ──┐
+    ├─ addressField     ──────┤                       │
+    └─ dobField         ──────┘                       │
+                                                      │
+    ├─ usernameField    ──────┐                       │
+    ├─ passwordField    ──────┤──► User Object        │
+    └─ confirmPwdField  ──────┘       │               │
+                                      ▼               │
+                            BCrypt Hash Password      │
+                                      │               │
+                          ┌───────────┴──────┐       │
+                          │                  │       │
+                ┌─────────▼─────────┐       │       │
+                │   INSERT USER     │       │       │
+                │                   │       │       │
+                │ users table:      │       │       │
+                │ • username        │       │       │
+                │ • password_hash   │       │       │
+                │ • email           │       │       │
+                │ • full_name       │       │       │
+                │ • role_id = 3     │       │       │
+                │                   │       │       │
+                │ Returns: user_id  │       │       │
+                └─────────┬─────────┘       │       │
+                          │                │       │
+                          └────────────────┼───────┤
+                                          │       │
+                          ┌───────────────▼──┐    │
+                          │ Get Created User  │    │
+                          │ by Username       │    │
+                          │ Returns: user_id  │    │
+                          └───────────────┬──┘    │
+                                         │       │
+                                         └─────┬─┘
+                                              │
+                           ┌──────────────────▼─────────────────┐
+                           │ Link User to Customer              │
+                           │ customer.setUserId(user_id)        │
+                           └──────────────────┬─────────────────┘
+                                              │
+                                  ┌───────────▼─────────────┐
+                                  │   INSERT CUSTOMER       │
+                                  │                         │
+                                  │ customers table:        │
+                                  │ • user_id (FK)          │
+                                  │ • full_name             │
+                                  │ • address               │
+                                  │ • phone                 │
+                                  │ • date_of_birth         │
+                                  │                         │
+                                  │ SUCCESS ✅              │
+                                  └─────────────────────────┘
+```
+
+## Validation Pipeline
+
+```
+Form Submission
+    │
+    ▼
+┌─────────────────────────────┐
+│  Step 1: Empty Field Check  │
+├─────────────────────────────┤
+│ if (nameField.isBlank())    │
+│   → Error: "Name required"  │
+│                             │
+│ if (phoneField.isBlank())   │
+│   → Error: "Phone required" │
+│                             │
+│ if (emailField.isBlank())   │
+│   → Error: "Email required" │
+│                             │
+│ if (username.isBlank())     │
+│   → Error: "User required"  │
+│                             │
+│ if (password.isBlank())     │
+│   → Error: "Pwd required"   │
+└────────────────┬────────────┘
+                 │ (all filled)
+                 ▼
+┌─────────────────────────────┐
+│ Step 2: Format Validation   │
+├─────────────────────────────┤
+│ Phone: matches(\d{7,15})    │
+│   → Error: "Invalid format" │
+│                             │
+│ Email: contains("@")        │
+│   → Error: "Invalid format" │
+│                             │
+│ Password: length() >= 6     │
+│   → Error: "Too short"      │
+└────────────────┬────────────┘
+                 │ (all valid)
+                 ▼
+┌─────────────────────────────┐
+│ Step 3: Match Check         │
+├─────────────────────────────┤
+│ Password == ConfirmPassword │
+│   → Error: "Not matching"   │
+└────────────────┬────────────┘
+                 │ (all matched)
+                 ▼
+┌─────────────────────────────┐
+│ Step 4: Database Validation │
+├─────────────────────────────┤
+│ (During Insert)             │
+│                             │
+│ Username UNIQUE constraint  │
+│   → Error: "Duplicate user" │
+│                             │
+│ Email UNIQUE constraint     │
+│   → Error: "Duplicate email"│
+└────────────────┬────────────┘
+                 │
+                 ▼
+            SUCCESS ✅
+```
+
+## Security Architecture
+
+```
+┌───────────────────────────────────────────────────────────┐
+│                   SECURITY LAYERS                         │
+├───────────────────────────────────────────────────────────┤
+│                                                           │
+│  Layer 1: Authentication                                 │
+│  ├─ User Session Check                                   │
+│  ├─ Role-based Access Control (Admin/Staff only)         │
+│  └─ Must be logged in to access dashboard                │
+│                                                           │
+│  Layer 2: Input Validation                               │
+│  ├─ Client-side validation (JavaScript/JavaFX)           │
+│  ├─ Regex patterns for phone, email                      │
+│  ├─ Length checks for strings                            │
+│  └─ Required field checks                                │
+│                                                           │
+│  Layer 3: Business Logic                                 │
+│  ├─ Two-phase creation (atomic operations)               │
+│  ├─ Prepared statements (SQL Injection prevention)       │
+│  ├─ Password hashing before transmission                 │
+│  └─ Transaction management                               │
+│                                                           │
+│  Layer 4: Database Constraints                           │
+│  ├─ UNIQUE constraint on username                        │
+│  ├─ UNIQUE constraint on email                           │
+│  ├─ FOREIGN KEY relationships                            │
+│  └─ NOT NULL constraints                                 │
+│                                                           │
+│  Layer 5: Data Protection                                │
+│  ├─ Password hashing with BCrypt                         │
+│  ├─ No plain-text password storage                       │
+│  ├─ Encrypted communication (HTTPS in production)        │
+│  └─ Session tokens/secure cookies                        │
+│                                                           │
+└───────────────────────────────────────────────────────────┘
+```
+
+## Deployment Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│            Development Environment                      │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│  Source Code                                            │
+│  ├─ CustomerView.java      [MODIFIED]                  │
+│  ├─ UserController.java    [MODIFIED]                  │
+│  ├─ UserDAO.java           [MODIFIED]                  │
+│  └─ Other files (unchanged)                            │
+│                                                         │
+│  Compilation                                            │
+│  └─ Maven compile (mvn clean compile)                  │
+│                                                         │
+└────────────────────┬────────────────────────────────────┘
+                     │
+                     │ Package as JAR/WAR
+                     ▼
+┌─────────────────────────────────────────────────────────┐
+│            Test Environment                             │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│  Deploy Application                                     │
+│  └─ banking-system.jar                                 │
+│                                                         │
+│  Test Database                                          │
+│  └─ Create test data                                   │
+│                                                         │
+│  Smoke Tests                                            │
+│  ├─ Add customer with valid data                       │
+│  ├─ Reject duplicate username                          │
+│  ├─ Edit customer info                                 │
+│  └─ Delete customer                                    │
+│                                                         │
+└────────────────────┬────────────────────────────────────┘
+                     │
+                     │ If tests pass
+                     ▼
+┌─────────────────────────────────────────────────────────┐
+│         Production Environment                          │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│  Deploy Application                                     │
+│  └─ banking-system.jar                                 │
+│                                                         │
+│  Production Database                                    │
+│  └─ Existing schema (no migration)                     │
+│                                                         │
+│  Live System                                            │
+│  ├─ Admin/Staff can add customers                      │
+│  ├─ Customers can login                                │
+│  ├─ Audit logging active                               │
+│  └─ Monitoring enabled                                 │
+│                                                         │
+│  Rollback Plan (if needed)                              │
+│  └─ Redeploy previous version                          │
+│     (no schema changes to revert)                       │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+```
+
+## Integration Points
+
+```
+┌─────────────────────────────────────────────────┐
+│         Banking Documentation System             │
+├─────────────────────────────────────────────────┤
+│                                                 │
+│  ┌──────────────────────────────────────────┐  │
+│  │  CustomerView (ENHANCED) ──┬─────────┐   │  │
+│  │                             │         │   │  │
+│  │  Add Customer Dialog    ◄───┼─────┐   │   │  │
+│  │  With Credentials           │     │   │   │  │
+│  └──────────────────────────────┼─────┼───┘   │  │
+│                                 │     │        │  │
+│  ┌──────────────────────────┐   │     │        │  │
+│  │ User Management View     │   │     │        │  │
+│  │ (sees new users)      ◄──┼─┐ │     │        │  │
+│  └──────────────────────────┘   │     │        │  │
+│                                 │     │        │  │
+│  ┌──────────────────────────┐   │     │        │  │
+│  │ Document Upload View     │   │     │        │  │
+│  │ (new customers can use)  ◄───┼─────┘        │  │
+│  └──────────────────────────┘   │              │  │
+│                                 │              │  │
+│  ┌──────────────────────────┐   │              │  │
+│  │ Authentication System    │   │              │  │
+│  │ (credentials work)     ◄─┴───┘              │  │
+│  └──────────────────────────┘                  │  │
+│                                                 │  │
+│  ┌──────────────────────────┐                  │  │
+│  │ Audit Logging System     │ (future)         │  │
+│  │ (tracks creation events) │                  │  │
+│  └──────────────────────────┘                  │  │
+│                                                 │  │
+└─────────────────────────────────────────────────┘
+```
+
+---
+
+**Architecture Complete** ✅
+
