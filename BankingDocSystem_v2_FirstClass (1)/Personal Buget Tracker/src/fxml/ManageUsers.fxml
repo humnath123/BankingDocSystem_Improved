@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.budgettracker.controller.ManageUsersController" spacing="15" style="-fx-padding: 20;">
+    <Label text="Manage Users" style="-fx-font-size: 18;"/>
+    <HBox spacing="10">
+        <Button text="Delete User" style="-fx-background-color: #F44336; -fx-text-fill: white;" onAction="#handleDeleteUser"/>
+        <Button text="Refresh" style="-fx-background-color: #2196F3; -fx-text-fill: white;" onAction="#handleRefresh"/>
+    </HBox>
+    <TableView fx:id="usersTable" prefHeight="400">
+        <columns>
+            <TableColumn text="ID" prefWidth="50"/>
+            <TableColumn text="Username" prefWidth="120"/>
+            <TableColumn text="Email" prefWidth="150"/>
+            <TableColumn text="Phone" prefWidth="120"/>
+            <TableColumn text="Name" prefWidth="150"/>
+        </columns>
+    </TableView>
+</VBox>

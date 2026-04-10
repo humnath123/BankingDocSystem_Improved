@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.budgettracker.controller.SavingGoalsController" spacing="15" style="-fx-padding: 20;">
+    <Label text="Saving Goals" style="-fx-font-size: 18; -fx-font-weight: bold;"/>
+    <HBox spacing="10">
+        <Button text="Create Goal" style="-fx-background-color: #4CAF50; -fx-text-fill: white;" onAction="#handleCreateGoal"/>
+        <Button text="Add Saving" style="-fx-background-color: #2196F3; -fx-text-fill: white;" onAction="#handleAddSaving"/>
+        <Button text="Delete" style="-fx-background-color: #F44336; -fx-text-fill: white;" onAction="#handleDelete"/>
+    </HBox>
+    <TableView fx:id="goalsTable" prefHeight="400">
+        <columns>
+            <TableColumn text="Goal Name" fx:id="goalNameColumn" prefWidth="150"/>
+            <TableColumn text="Target Amount" fx:id="targetColumn" prefWidth="120"/>
+            <TableColumn text="Current Amount" fx:id="currentColumn" prefWidth="120"/>
+            <TableColumn text="Progress" fx:id="progressColumn" prefWidth="120"/>
+            <TableColumn text="Deadline" fx:id="deadlineColumn" prefWidth="120"/>
+            <TableColumn text="Status" fx:id="statusColumn" prefWidth="100"/>
+        </columns>
+    </TableView>
+</VBox>

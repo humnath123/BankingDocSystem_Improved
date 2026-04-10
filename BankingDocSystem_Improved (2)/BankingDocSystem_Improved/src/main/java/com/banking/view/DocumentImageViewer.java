@@ -6,6 +6,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
@@ -111,6 +112,18 @@ public class DocumentImageViewer {
                 
                 area.getChildren().addAll(pdfLabel, pdfNote);
 
+            } else if (fileName.endsWith(".txt") || fileName.endsWith(".log") || fileName.endsWith(".md")) {
+                // Text file handling
+                String content = java.nio.file.Files.readString(file.toPath());
+                TextArea textArea = new TextArea(content);
+                textArea.setEditable(false);
+                textArea.setWrapText(true);
+                textArea.setPrefWidth(700);
+                textArea.setPrefHeight(500);
+                textArea.setStyle("-fx-font-family: 'Consolas', 'Monaco', monospace; -fx-font-size: 12;");
+
+                area.getChildren().add(textArea);
+
             } else if (fileName.endsWith(".jpg") || fileName.endsWith(".jpeg") || 
                       fileName.endsWith(".png") || fileName.endsWith(".gif") || 
                       fileName.endsWith(".bmp")) {
@@ -135,7 +148,7 @@ public class DocumentImageViewer {
                 area.getChildren().addAll(unsupported, note);
             }
         } catch (Exception e) {
-            Label error = new Label("❌ Error Loading Image");
+            Label error = new Label("❌ Error Loading Document");
             error.setStyle("-fx-font-size: 14; -fx-font-weight: bold; -fx-text-fill: #E74C3C;");
             
             Label errorMsg = new Label(e.getMessage());

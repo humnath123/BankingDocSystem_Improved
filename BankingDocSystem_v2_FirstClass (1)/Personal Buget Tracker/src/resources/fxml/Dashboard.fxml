@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.budgettracker.controller.DashboardController" spacing="10" prefWidth="800" prefHeight="600">
+    <HBox spacing="10">
+        <Label text="Welcome, " />
+        <Label fx:id="userLabel" />
+        <Button text="Logout" onAction="#handleLogout"/>
+    </HBox>
+    <HBox spacing="10">
+        <Label text="Balance: " />
+        <Label fx:id="balanceLabel" />
+    </HBox>
+    <HBox spacing="10">
+        <Button text="Add Transaction" onAction="#handleAddTransaction"/>
+        <Button text="Edit Transaction" onAction="#handleEditTransaction"/>
+        <Button text="Delete Transaction" onAction="#handleDeleteTransaction"/>
+    </HBox>
+    <TableView fx:id="transactionTable" prefHeight="400">
+        <columns>
+            <TableColumn text="ID" fx:id="idColumn" />
+            <TableColumn text="Amount" fx:id="amountColumn" />
+            <TableColumn text="Type" fx:id="typeColumn" />
+            <TableColumn text="Category" fx:id="categoryColumn" />
+            <TableColumn text="Date" fx:id="dateColumn" />
+            <TableColumn text="Note" fx:id="noteColumn" />
+        </columns>
+    </TableView>
+</VBox>

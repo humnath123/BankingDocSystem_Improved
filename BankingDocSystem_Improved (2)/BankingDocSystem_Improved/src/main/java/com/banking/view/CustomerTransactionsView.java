@@ -21,12 +21,12 @@ import java.util.List;
  */
 public class CustomerTransactionsView {
 
-    private BorderPane root;
-    private TableView<Transaction> table;
-    private TransactionController txnController;
-    private AccountController accountController;
-    private CustomerDAO customerDAO;
-    private ComboBox<Account> accountFilter;
+    private final BorderPane root;
+    private final TableView<Transaction> table;
+    private final TransactionController txnController;
+    private final AccountController accountController;
+    private final CustomerDAO customerDAO;
+    private final ComboBox<Account> accountFilter;
 
     public CustomerTransactionsView() {
         txnController = new TransactionController();
@@ -90,9 +90,10 @@ public class CustomerTransactionsView {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private TableView<Transaction> buildTable() {
         TableView<Transaction> tv = new TableView<>();
-        tv.getStyleClass().add("data-table");
+        tv.getStyleClass().add("table-view");
 
         TableColumn<Transaction, Integer> idCol = col("TXN ID", "transactionId", 70);
         TableColumn<Transaction, String> accCol = col("Account Number", "accountNumber", 150);
@@ -103,14 +104,14 @@ public class CustomerTransactionsView {
             @Override protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
                 setText(item);
+                getStyleClass().removeAll("transaction-deposit", "transaction-withdrawal", "transaction-other");
                 if (!empty && item != null) {
-                    String color = switch (item) {
-                        case "Deposit" -> "#27AE60";
-                        case "Withdrawal" -> "#E74C3C";
-                        default -> "#F39C12";
-                    };
-                    setStyle("-fx-text-fill: " + color + "; -fx-font-weight: bold;");
-                } else setStyle("");
+                    switch (item) {
+                        case "Deposit" -> getStyleClass().add("transaction-deposit");
+                        case "Withdrawal" -> getStyleClass().add("transaction-withdrawal");
+                        default -> getStyleClass().add("transaction-other");
+                    }
+                }
             }
         });
 
@@ -148,7 +149,7 @@ public class CustomerTransactionsView {
     }
 
     public BorderPane getRoot() {
+
         return root;
     }
 }
-

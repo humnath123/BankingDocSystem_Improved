@@ -1,0 +1,308 @@
+================================================================================
+BANKING DOCUMENT SYSTEM - FIXES APPLIED
+================================================================================
+
+Date: April 10, 2026
+Fixed Issues: 4 major problems
+
+================================================================================
+ISSUE #1: Database Tables Missing
+================================================================================
+
+ERROR MESSAGES:
+  ❌ Get transactions error: Table 'bankingy.transactions' doesn't exist
+  ❌ Get accounts error: Table 'bankingy.accounts' doesn't exist
+  ❌ Insert account error: Table 'bankingy.accounts' doesn't exist
+
+ROOT CAUSE:
+  The DatabaseConnection class was pointing to database "bankingy" instead of
+  "banking_system". The schema file defines the database as "banking_system",
+  but the connection was using the wrong name.
+
+SOLUTION APPLIED:
+  File: src/main/java/com/banking/database/DatabaseConnection.java
+  Line 14: Changed DB_NAME from "bankingy" to "banking_system"
+
+  OLD: private static final String DB_NAME = "bankingy";
+  NEW: private static final String DB_NAME = "banking_system";
+
+RESULT:
+  ✅ Database connection now targets the correct database
+  ✅ All tables (accounts, transactions, etc.) will be auto-created on startup
+  ✅ No more "table doesn't exist" errors
+
+================================================================================
+ISSUE #2: CustomerView.java Compilation Errors
+================================================================================
+
+ERROR MESSAGES:
+  ❌ cannot find symbol: variable nameField
+  ❌ cannot find symbol: variable emailField
+  ❌ cannot find symbol: variable phoneField
+  ❌ cannot find symbol: variable addressField
+  ❌ cannot find symbol: variable dobField
+  ❌ cannot find symbol: variable usernameField
+  ❌ cannot find symbol: variable passwordField
+  ❌ cannot find symbol: variable confirmPasswordField
+
+ROOT CAUSE:
+  In the showForm() method, all the text fields (nameField, phoneField, etc.)
+  were being declared INSIDE the saveButton.setOnAction() lambda function, but
+  they were also being referenced in the grid layout setup which happened
+  BEFORE the button logic. This caused "symbol not found" errors.
+
+SOLUTION APPLIED:
+  File: src/main/java/com/banking/view/CustomerView.java
+  Lines: 146-329 (entire showForm method restructured)
+
+  REORGANIZED THE METHOD:
+  1. Create dialog and set properties
+  2. Add dialog.setOnCloseRequest(e -> {}); to prevent unwanted closes
+  3. Create ButtonTypes and grid
+  4. **DECLARE ALL FIELDS FIRST** (was missing before)
+     - TextField nameField = field(...)
+     - TextField emailField = field(...)
+     - TextField phoneField = field(...)
+     - TextField addressField = field(...)
+     - TextField dobField = field(...)
+     - TextField usernameField = field(...)
+     - PasswordField passwordField = new PasswordField()
+     - PasswordField confirmPasswordField = new PasswordField()
+  5. Create labels
+  6. Add labels and fields to grid
+  7. Add conditional credential fields
+  8. Set grid content
+  9. Define save button logic (now all fields are in scope)
+  10. Set result converter
+  11. Show dialog and handle results
+
+RESULT:
+  ✅ All field symbols are now properly declared
+  ✅ No more compilation errors
+  ✅ Code is more logically organized
+
+================================================================================
+ISSUE #3: Validation Error Pop-ups Closing the Add Customer Window
+================================================================================
+
+ERROR MESSAGES:
+  ❌ When validation errors appeared, the entire "Add Customer" dialog closed
+  ❌ User loses all entered data
+  ❌ Cannot correct the validation errors
+
+ROOT CAUSE:
+  When validation failed and AlertHelper.showError() was called, the error
+  dialog was closing the parent dialog. Also, there was no mechanism to
+  prevent the main dialog from auto-closing on error alerts.
+
+SOLUTION APPLIED:
+  File: src/main/java/com/banking/view/CustomerView.java
+  Line 153: Added dialog.setOnCloseRequest(e -> {});
+
+  This line prevents the dialog from being closed by validation error dialogs.
+  Validation errors now show in separate alert windows without affecting the
+  main form.
+
+  All validation checks now use:
+    if (condition) {
+        AlertHelper.showError("Validation Error", message);
+        return;  // Exit the action handler, don't close dialog
+    }
+
+RESULT:
+  ✅ Validation error dialogs no longer close the main form
+  ✅ User can see the error message
+  ✅ User can correct the input and try again
+  ✅ Form stays open until manually closed or data is successfully saved
+
+================================================================================
+ISSUE #4: Close Button Not Working in Add Customer Dialog
+================================================================================
+
+ERROR MESSAGES:
+  ❌ Clicking the X button or CANCEL button doesn't close the dialog
+  ❌ Users cannot dismiss the add customer form
+
+ROOT CAUSE:
+  The dialog setup didn't have proper close handling, and there were conflicts
+  between the save button logic and the default close behavior.
+
+SOLUTION APPLIED:
+  File: src/main/java/com/banking/view/CustomerView.java
+
+  1. Added proper ButtonType definitions:
+     ButtonType saveType = new ButtonType("💾 Save Changes",
+                                        ButtonBar.ButtonData.OK_DONE);
+     dialog.getDialogPane().getButtonTypes().addAll(saveType, ButtonType.CANCEL);
+
+  2. Set up result converter to handle button actions properly
+
+  3. Used dialog.showAndWait().ifPresent() to handle the result only if
+     dialog was successfully completed
+
+RESULT:
+  ✅ CANCEL button now works correctly and closes the dialog
+  ✅ X button (close button) now works correctly and closes the dialog
+  ✅ Dialog only stays open when:
+     - User is entering data
+     - Validation fails (error shows in separate alert)
+  ✅ Dialog closes when:
+     - User clicks CANCEL button
+     - User clicks X button
+     - User successfully saves the form
+
+================================================================================
+SUMMARY OF CHANGES
+================================================================================
+
+FILES MODIFIED: 2
+
+1. src/main/java/com/banking/database/DatabaseConnection.java
+   - Changed database name from "bankingy" to "banking_system"
+   - Impact: Fixes all database table not found errors
+
+2. src/main/java/com/banking/view/CustomerView.java
+   - Restructured showForm() method (146-329)
+   - Moved field declarations to top of method
+   - Added dialog.setOnCloseRequest() to prevent validation dialogs from closing main form
+   - Improved validation error handling
+   - Fixed close button functionality
+   - Impact: Fixes compilation errors, validation dialogs, and close button
+
+FILES NOT MODIFIED: All other files remain unchanged
+  - No changes to DAOs (AccountDAO, TransactionDAO, CustomerDAO, etc.)
+  - No changes to Controllers
+  - No changes to Models
+  - No changes to database initialization code
+
+================================================================================
+WHAT YOU NEED TO DO NOW
+================================================================================
+
+1. ENSURE MySQL IS RUNNING
+   - Start your MySQL server (local or remote)
+   - Verify connection parameters in DatabaseConnection.java:
+     * DB_HOST = "localhost"
+     * DB_PORT = "3306"
+     * DB_USER = "root"
+     * DB_PASSWORD = "humnath123@$ASD"
+
+2. RUN THE APPLICATION
+   - When the app starts, DatabaseInitializer will:
+     * Create the "banking_system" database if it doesn't exist
+     * Create all required tables (users, customers, accounts, transactions, etc.)
+     * Seed sample data (admin, staff, sample customer, sample account)
+
+3. TEST THE FIXES
+   - Login with admin credentials (or staff/customer)
+   - Go to "Customer Management"
+   - Try to add a new customer
+   - If you enter invalid data, error should appear without closing the form
+   - Correct the data and submit
+   - Form should close after successful save
+   - New customer should appear in the table
+
+================================================================================
+ERROR RESOLUTION CHECKLIST
+================================================================================
+
+After running the fixed application:
+
+Database Errors:
+  ☐ No "Table 'bankingy.transactions' doesn't exist" errors
+  ☐ No "Table 'bankingy.accounts' doesn't exist" errors
+  ☐ No "Insert account error" messages
+  ☐ Accounts table is populated with data
+  ☐ Transactions table is populated with data
+
+Compilation Errors:
+  ☐ CustomerView.java compiles without errors
+  ☐ No "cannot find symbol: variable nameField" errors
+  ☐ No "cannot find symbol" for any form fields
+
+Add Customer Dialog:
+  ☐ Can open "Add Customer" dialog
+  ☐ Can enter data in all fields
+  ☐ Validation errors show in popup alert
+  ☐ Main form remains open after validation error
+  ☐ Can correct invalid data and submit
+  ☐ Form closes after successful save
+  ☐ Close button (X) works correctly
+  ☐ CANCEL button works correctly
+
+Account Management:
+  ☐ Can create new accounts
+  ☐ Can deposit money
+  ☐ Can withdraw money
+  ☐ Can view transactions
+  ☐ All data appears in tables
+
+================================================================================
+TECHNICAL DETAILS
+================================================================================
+
+Database Structure (automatically created):
+- roles: User roles (Admin, Staff, Customer)
+- users: User accounts with login credentials
+- customers: Customer profile information
+- accounts: Bank accounts for customers
+- transactions: Deposit/withdrawal history
+- documents: Document management
+- document_types: Types of documents
+- document_statuses: Document approval status
+- upload_requests: Customer document upload requests
+- audit_logs: System audit trail
+- notifications: User notifications
+
+Connection Details:
+- Driver: com.mysql.cj.jdbc.Driver
+- URL: jdbc:mysql://localhost:3306/banking_system
+- Charset: UTF-8
+- Timezone: UTC
+- SSL: Disabled (for development)
+
+Validation Requirements (for adding customer):
+- Name: Not empty, 2-100 characters, letters and spaces only
+- Email: Valid email format
+- Phone: 10-15 digits
+- Address: Not empty
+- DOB: Valid date in YYYY-MM-DD format
+- Username: 4-20 characters, alphanumeric and underscore only
+- Password: Minimum 6 characters
+- Confirm Password: Must match Password field
+
+================================================================================
+SUPPORT INFORMATION
+================================================================================
+
+If issues persist:
+
+1. Check MySQL Connection:
+   - Verify MySQL server is running
+   - Verify credentials (root / humnath123@$ASD)
+   - Check if port 3306 is accessible
+
+2. Check Database Creation:
+   - Connect to MySQL directly
+   - Run: SELECT * FROM information_schema.schemata WHERE schema_name='banking_system';
+   - If not found, the initialization failed
+
+3. Check Table Creation:
+   - Connect to banking_system database
+   - Run: SHOW TABLES;
+   - Should see: accounts, audit_logs, customers, documents, document_statuses,
+     document_types, notifications, roles, transactions, upload_requests, users
+
+4. Manual Database Setup (if needed):
+   - Execute banking_improved_schema.sql in MySQL
+   - This will manually create everything
+
+5. Application Logs:
+   - Check console output for SQL errors
+   - Look for "Database initialization failed" messages
+   - Check for connection timeout errors
+
+================================================================================
+END OF FIXES SUMMARY
+================================================================================
+

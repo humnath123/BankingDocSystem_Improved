@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.budgettracker.controller.BudgetManagementController" spacing="15" style="-fx-padding: 20;">
+    <Label text="Budget Management" style="-fx-font-size: 18; -fx-font-weight: bold;"/>
+    <HBox spacing="10">
+        <Button text="Create Budget" style="-fx-background-color: #4CAF50; -fx-text-fill: white;" onAction="#handleCreateBudget"/>
+        <Button text="Edit Budget" style="-fx-background-color: #2196F3; -fx-text-fill: white;" onAction="#handleEditBudget"/>
+        <Button text="Delete" style="-fx-background-color: #F44336; -fx-text-fill: white;" onAction="#handleDelete"/>
+        <Button text="Recalculate" style="-fx-background-color: #FF9800; -fx-text-fill: white;" onAction="#handleRecalculate"/>
+    </HBox>
+    <TableView fx:id="budgetsTable" prefHeight="400">
+        <columns>
+            <TableColumn text="Category" fx:id="categoryColumn" prefWidth="150"/>
+            <TableColumn text="Monthly Limit" fx:id="limitColumn" prefWidth="120"/>
+            <TableColumn text="Spent" fx:id="spentColumn" prefWidth="100"/>
+            <TableColumn text="Remaining" fx:id="remainingColumn" prefWidth="100"/>
+            <TableColumn text="Usage %" fx:id="usageColumn" prefWidth="80"/>
+            <TableColumn text="Status" fx:id="statusColumn" prefWidth="100"/>
+        </columns>
+    </TableView>
+</VBox>

@@ -56,7 +56,11 @@ public class CustomerDocumentsView {
         searchField.setPrefWidth(350);
         searchField.getStyleClass().add("search-field");
 
-        toolbar.getChildren().add(searchField);
+        Button uploadBtn = new Button("📤 Upload Document");
+        uploadBtn.getStyleClass().add("primary-btn");
+        uploadBtn.setOnAction(e -> handleUploadDocument());
+
+        toolbar.getChildren().addAll(searchField, uploadBtn);
 
         // Build table with download button
         table = buildTable();
@@ -73,9 +77,10 @@ public class CustomerDocumentsView {
         refreshTable(null);
     }
 
+    @SuppressWarnings("unchecked")
     private TableView<Document> buildTable() {
         TableView<Document> tv = new TableView<>();
-        tv.getStyleClass().add("data-table");
+        tv.getStyleClass().add("table-view");
 
         TableColumn<Document, Integer> idCol = col("Doc ID", "documentId", 60);
         TableColumn<Document, String> typeCol = col("Document Type", "documentType", 140);
@@ -90,13 +95,16 @@ public class CustomerDocumentsView {
             @Override protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
                 setText(item);
+                getStyleClass().removeAll("status-approved", "status-rejected", "status-pending");
                 if (!empty && item != null) {
-                    setStyle("Approved".equals(item)
-                        ? "-fx-text-fill: #27AE60; -fx-font-weight: bold;"
-                        : "Rejected".equals(item)
-                        ? "-fx-text-fill: #E74C3C; -fx-font-weight: bold;"
-                        : "-fx-text-fill: #F39C12; -fx-font-weight: bold;");
-                } else setStyle("");
+                    if ("Approved".equals(item)) {
+                        getStyleClass().add("status-approved");
+                    } else if ("Rejected".equals(item)) {
+                        getStyleClass().add("status-rejected");
+                    } else {
+                        getStyleClass().add("status-pending");
+                    }
+                }
             }
         });
 
@@ -254,10 +262,60 @@ public class CustomerDocumentsView {
         }
     }
 
+    private void handleUploadDocument() {
+        try {
+            // Open file chooser to select document
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Upload Document");
+            fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("PDF Files", "*.pdf"),
+                new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg"),
+                new FileChooser.ExtensionFilter("All Files", "*.*")
+            );
+            File selectedFile = fileChooser.showOpenDialog(null);
+
+            if (selectedFile != null) {
+                // Get current logged-in user's customer record
+                int userId = Session.getInstance().getCurrentUser().getUserId();
+                Customer customer = customerDAO.getCustomerByUserId(userId);
+
+                if (customer != null) {
+                    // Upload document using controller
+                    String filePath = selectedFile.getAbsolutePath();
+                    String fileName = selectedFile.getName();
+                    String documentType = "General"; // Default type, can be changed by user
+
+                    Document newDoc = new Document();
+                    newDoc.setFilePath(filePath);
+                    newDoc.setFileName(fileName);
+                    newDoc.setDocumentType(documentType);
+                    newDoc.setCustomerId(customer.getCustomerId());
+
+                    controller.add(newDoc);
+
+                    AlertHelper.showInfo("Success", "Document uploaded successfully!");
+                    refreshTable(null); // Refresh table to show new document
+                }
+            }
+        } catch (Exception e) {
+            AlertHelper.showError("Error", "Failed to upload document: " + e.getMessage());
+        }
+    }
+
     public BorderPane getRoot() {
         return root;
     }
 }
+
+
+
+
+
+
+
+
+
+
 
 
 

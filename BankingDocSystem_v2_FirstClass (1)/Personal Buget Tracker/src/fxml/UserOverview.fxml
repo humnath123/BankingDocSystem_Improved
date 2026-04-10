@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.budgettracker.controller.UserOverviewController" spacing="15" style="-fx-padding: 20;">
+    <Label text="Dashboard Overview" style="-fx-font-size: 18; -fx-font-weight: bold;"/>
+    <GridPane hgap="20" vgap="15">
+        <VBox style="-fx-border-color: #E0E0E0; -fx-padding: 20; -fx-border-radius: 4;" GridPane.columnIndex="0" GridPane.rowIndex="0">
+            <Label text="Total Balance" style="-fx-font-size: 12; -fx-text-fill: #666;"/>
+            <Label fx:id="balanceLabel" text="0.00" style="-fx-font-size: 24; -fx-font-weight: bold; -fx-text-fill: #2196F3;"/>
+        </VBox>
+        <VBox style="-fx-border-color: #E0E0E0; -fx-padding: 20; -fx-border-radius: 4;" GridPane.columnIndex="1" GridPane.rowIndex="0">
+            <Label text="This Month Expense" style="-fx-font-size: 12; -fx-text-fill: #666;"/>
+            <Label fx:id="monthlyExpenseLabel" text="0.00" style="-fx-font-size: 24; -fx-font-weight: bold; -fx-text-fill: #F44336;"/>
+        </VBox>
+        <VBox style="-fx-border-color: #E0E0E0; -fx-padding: 20; -fx-border-radius: 4;" GridPane.columnIndex="2" GridPane.rowIndex="0">
+            <Label text="Total Income" style="-fx-font-size: 12; -fx-text-fill: #666;"/>
+            <Label fx:id="totalIncomeLabel" text="0.00" style="-fx-font-size: 24; -fx-font-weight: bold; -fx-text-fill: #4CAF50;"/>
+        </VBox>
+    </GridPane>
+    <Label text="Recent Transactions" style="-fx-font-size: 14; -fx-font-weight: bold;"/>
+    <TableView fx:id="recentTransactionsTable" prefHeight="250">
+        <columns>
+            <TableColumn text="Date" fx:id="dateColumn" prefWidth="100"/>
+            <TableColumn text="Category" fx:id="categoryColumn" prefWidth="120"/>
+            <TableColumn text="Type" fx:id="typeColumn" prefWidth="80"/>
+            <TableColumn text="Amount" fx:id="amountColumn" prefWidth="100"/>
+        </columns>
+    </TableView>
+</VBox>

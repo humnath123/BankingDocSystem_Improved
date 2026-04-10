@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.budgettracker.controller.RegisterController" alignment="CENTER" spacing="15" style="-fx-padding: 20;" prefWidth="500" prefHeight="700">
+    <VBox style="-fx-border-color: #E0E0E0; -fx-padding: 30;" spacing="15">
+        <Label text="Create Account" style="-fx-font-size: 24;"/>
+        <VBox spacing="5">
+            <Label text="Full Name*"/>
+            <TextField fx:id="fullNameField" promptText="Enter full name"/>
+            <Label fx:id="fullNameError" style="-fx-text-fill: #F44336;"/>
+        </VBox>
+        <VBox spacing="5">
+            <Label text="Email*"/>
+            <TextField fx:id="emailField" promptText="Enter email"/>
+            <Label fx:id="emailError" style="-fx-text-fill: #F44336;"/>
+        </VBox>
+        <VBox spacing="5">
+            <Label text="Phone*"/>
+            <TextField fx:id="phoneField" promptText="10 digits"/>
+            <Label fx:id="phoneError" style="-fx-text-fill: #F44336;"/>
+        </VBox>
+        <VBox spacing="5">
+            <Label text="Username*"/>
+            <TextField fx:id="usernameField" promptText="3-50 characters"/>
+            <Label fx:id="usernameError" style="-fx-text-fill: #F44336;"/>
+        </VBox>
+        <VBox spacing="5">
+            <Label text="Password*"/>
+            <PasswordField fx:id="passwordField" promptText="Min 6 characters"/>
+            <Label fx:id="passwordError" style="-fx-text-fill: #F44336;"/>
+        </VBox>
+        <VBox spacing="5">
+            <Label text="Confirm Password*"/>
+            <PasswordField fx:id="confirmPasswordField" promptText="Confirm"/>
+            <Label fx:id="confirmPasswordError" style="-fx-text-fill: #F44336;"/>
+        </VBox>
+        <Label fx:id="generalError" style="-fx-text-fill: #F44336;"/>
+        <HBox spacing="10" style="-fx-padding-top: 15;">
+            <Button text="Register" style="-fx-background-color: #4CAF50; -fx-text-fill: white;" onAction="#handleRegister" prefWidth="150"/>
+            <Button text="Back to Login" style="-fx-background-color: #666666; -fx-text-fill: white;" onAction="#handleBackToLogin" prefWidth="150"/>
+        </HBox>
+    </VBox>
+</VBox>

@@ -1,0 +1,45 @@
+To fix the "JavaFX runtime components are missing" error, follow these steps in IntelliJ IDEA:
+
+1. Download JavaFX SDK:
+   - Go to https://openjfx.io/
+   - Download the latest JavaFX SDK for Windows (e.g., openjfx-21.0.1_windows-x64_bin-sdk.zip)
+   - Extract the ZIP file to a folder, e.g., C:\javafx-sdk-21.0.1
+
+2. Add JavaFX Library to Project:
+   - In IntelliJ, go to File > Project Structure > Libraries
+   - Click the + button > Java
+   - Navigate to the lib folder inside the extracted JavaFX SDK (e.g., C:\javafx-sdk-21.0.1\lib)
+   - Select all JAR files and click OK
+   - Apply and OK
+
+3. Configure Run Configuration:
+   - Go to Run > Edit Configurations
+   - Select your Main class configuration
+   - In VM options, add:
+     --module-path "C:\javafx-sdk-21.0.1\lib" --add-modules javafx.controls,javafx.fxml
+   - Replace the path with your actual JavaFX lib path
+   - Apply and OK
+
+4. Also, ensure you have MySQL Connector/J added similarly:
+   - Download from https://dev.mysql.com/downloads/connector/j/
+   - Add the JAR to libraries
+
+5. Run the application again.
+
+If you still get errors, make sure your Java version is 11+ and matches the JavaFX version.
+
+The JavaFX JARs are correctly added to the classpath, but JavaFX requires special module configuration. Follow these steps in IntelliJ IDEA:
+
+1. Go to **Run > Edit Configurations**
+2. Select your **Main** run configuration (or create one if it doesn't exist)
+3. In the **VM options** field, add:
+   --module-path "C:\Users\godav\Downloads\openjfx-25.0.2_windows-x64_bin-sdk (1)\javafx-sdk-25.0.2\lib" --add-modules javafx.controls,javafx.fxml
+4. **Important:** Remove the JavaFX JARs from the classpath if they are there (since we're using module path)
+   - Go to **Run > Edit Configurations > Main > Modify options > Add VM options**
+   - Or in the classpath tab, ensure JavaFX JARs are not listed
+5. Apply and OK
+6. Run the application
+
+The key difference is that JavaFX must be on the module path, not the classpath, for modern Java versions.
+
+If you still get errors, try using Java 11 instead of OpenJDK 25, as JavaFX compatibility can vary with very new Java versions.

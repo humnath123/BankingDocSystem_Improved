@@ -9,14 +9,15 @@ import com.banking.model.User;
 import com.banking.util.AlertHelper;
 import com.banking.util.PasswordUtil;
 import com.banking.util.Session;
+import com.banking.util.ValidationUtil;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
+import javafx.scene.shape.Circle;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,11 +35,11 @@ import java.nio.file.Paths;
  */
 public class CustomerProfileView {
 
-    private BorderPane root;
-    private CustomerController customerController;
-    private UserController userController;
-    private UserDAO userDAO;
-    private CustomerDAO customerDAO;
+    private final BorderPane root;
+    private final CustomerController customerController;
+    private final UserController userController;
+    private final UserDAO userDAO;
+    private final CustomerDAO customerDAO;
     private Customer currentCustomer;
     private User currentUser;
     private ImageView photoImageView;
@@ -60,7 +61,7 @@ public class CustomerProfileView {
     private ScrollPane buildProfileForm() {
         VBox mainContainer = new VBox(25);
         mainContainer.setPadding(new Insets(30));
-        mainContainer.setStyle("-fx-background-color: #F5F7FA;");
+        mainContainer.getStyleClass().add("profile-card");
 
         // Hero Header Section
         VBox heroSection = buildHeroSection();
@@ -91,7 +92,7 @@ public class CustomerProfileView {
 
         ScrollPane scrollPane = new ScrollPane(mainContainer);
         scrollPane.setFitToWidth(true);
-        scrollPane.setStyle("-fx-background-color: #F5F7FA;");
+        scrollPane.getStyleClass().add("scroll-pane");
         return scrollPane;
     }
 
@@ -129,14 +130,15 @@ public class CustomerProfileView {
         photoContainer.setStyle("-fx-border-color: #D0D0D0; " +
                                "-fx-border-radius: 100; " +
                                "-fx-border-width: 3; " +
-                               "-fx-background-color: #F9F9F9;");
+                               "-fx-background-color: #F9F9F9; " +
+                               "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 10, 0, 0, 5);");
         photoContainer.setAlignment(Pos.CENTER);
 
         photoImageView = new ImageView();
         photoImageView.setFitWidth(190);
         photoImageView.setFitHeight(190);
         photoImageView.setPreserveRatio(true);
-        photoImageView.setStyle("-fx-border-radius: 95;");
+        photoImageView.setClip(new Circle(95, 95, 95));
 
         setDefaultPhoto();
         photoContainer.getChildren().add(photoImageView);
@@ -168,46 +170,12 @@ public class CustomerProfileView {
         buttonBox.setAlignment(Pos.CENTER);
 
         Button uploadBtn = new Button("🖼️ Upload Photo");
-        uploadBtn.setStyle("-fx-padding: 10 20; " +
-                          "-fx-font-size: 12; " +
-                          "-fx-background-color: #667eea; " +
-                          "-fx-text-fill: white; " +
-                          "-fx-border-radius: 5; " +
-                          "-fx-cursor: hand;");
+        uploadBtn.getStyleClass().add("action-btn-primary");
         uploadBtn.setPrefWidth(140);
-        uploadBtn.setOnMouseEntered(e -> uploadBtn.setStyle("-fx-padding: 10 20; " +
-                                                            "-fx-font-size: 12; " +
-                                                            "-fx-background-color: #5568d3; " +
-                                                            "-fx-text-fill: white; " +
-                                                            "-fx-border-radius: 5; " +
-                                                            "-fx-cursor: hand;"));
-        uploadBtn.setOnMouseExited(e -> uploadBtn.setStyle("-fx-padding: 10 20; " +
-                                                           "-fx-font-size: 12; " +
-                                                           "-fx-background-color: #667eea; " +
-                                                           "-fx-text-fill: white; " +
-                                                           "-fx-border-radius: 5; " +
-                                                           "-fx-cursor: hand;"));
 
         Button removeBtn = new Button("🗑️ Remove");
-        removeBtn.setStyle("-fx-padding: 10 20; " +
-                          "-fx-font-size: 12; " +
-                          "-fx-background-color: #F44336; " +
-                          "-fx-text-fill: white; " +
-                          "-fx-border-radius: 5; " +
-                          "-fx-cursor: hand;");
+        removeBtn.getStyleClass().add("action-btn-close");
         removeBtn.setPrefWidth(140);
-        removeBtn.setOnMouseEntered(e -> removeBtn.setStyle("-fx-padding: 10 20; " +
-                                                           "-fx-font-size: 12; " +
-                                                           "-fx-background-color: #DA190B; " +
-                                                           "-fx-text-fill: white; " +
-                                                           "-fx-border-radius: 5; " +
-                                                           "-fx-cursor: hand;"));
-        removeBtn.setOnMouseExited(e -> removeBtn.setStyle("-fx-padding: 10 20; " +
-                                                          "-fx-font-size: 12; " +
-                                                          "-fx-background-color: #F44336; " +
-                                                          "-fx-text-fill: white; " +
-                                                          "-fx-border-radius: 5; " +
-                                                          "-fx-cursor: hand;"));
 
         uploadBtn.setOnAction(e -> handlePhotoUpload());
         removeBtn.setOnAction(e -> handlePhotoRemove());
@@ -223,13 +191,11 @@ public class CustomerProfileView {
 
     private VBox buildPersonalInfoSection() {
         VBox section = new VBox(15);
-        section.setStyle("-fx-background-color: white; " +
-                        "-fx-border-color: #E0E0E0; " +
-                        "-fx-border-radius: 8; " +
-                        "-fx-padding: 25;");
+        section.getStyleClass().add("profile-section");
+        section.setPadding(new Insets(25));
 
         Label sectionTitle = new Label("ℹ️ Personal Information");
-        sectionTitle.setStyle("-fx-font-size: 16; -fx-font-weight: bold; -fx-text-fill: #333333;");
+        sectionTitle.getStyleClass().add("profile-section-title");
 
         GridPane grid = new GridPane();
         grid.setHgap(15);
@@ -239,9 +205,9 @@ public class CustomerProfileView {
         addFormField(grid, 0, "👤 Username", 
             currentUser != null ? currentUser.getUsername() : "", true);
 
-        // Email (Read-only)
-        addFormField(grid, 1, "✉️ Email", 
-            currentCustomer != null ? currentCustomer.getEmail() : "", true);
+        // Email (Editable)
+        TextField emailField = addFormField(grid, 1, "✉️ Email", 
+            currentCustomer != null ? currentCustomer.getEmail() : "", false);
 
         // Full Name (Editable)
         TextField fullNameField = addFormField(grid, 2, "📝 Full Name", 
@@ -255,12 +221,8 @@ public class CustomerProfileView {
         TextField addressField = addFormField(grid, 4, "🏠 Address", 
             currentCustomer != null ? currentCustomer.getAddress() : "", false);
 
-        // DOB (Editable)
-        TextField dobField = addFormField(grid, 5, "📅 Date of Birth", 
-            currentCustomer != null ? currentCustomer.getDateOfBirth() : "", false);
-        dobField.setPromptText("YYYY-MM-DD");
-
-        grid.setUserData(new Object[]{fullNameField, phoneField, addressField, dobField});
+        // Store fields for validation
+        grid.setUserData(new Object[]{emailField, fullNameField, phoneField, addressField});
         section.getChildren().addAll(sectionTitle, grid);
 
         return section;
@@ -268,20 +230,15 @@ public class CustomerProfileView {
 
     private TextField addFormField(GridPane grid, int row, String label, String value, boolean readOnly) {
         Label labelNode = new Label(label);
-        labelNode.setStyle("-fx-font-weight: bold; -fx-text-fill: #555555; -fx-font-size: 12;");
+        labelNode.getStyleClass().add("field-label");
 
         TextField field = new TextField(value);
+        field.getStyleClass().add("text-field");
         field.setPrefWidth(250);
-        field.setStyle("-fx-padding: 10; -fx-border-color: #E0E0E0; -fx-border-radius: 4; -fx-font-size: 11;");
 
         if (readOnly) {
             field.setEditable(false);
-            field.setStyle("-fx-padding: 10; " +
-                          "-fx-border-color: #E0E0E0; " +
-                          "-fx-border-radius: 4; " +
-                          "-fx-font-size: 11; " +
-                          "-fx-control-inner-background: #F5F5F5; " +
-                          "-fx-text-fill: #999999;");
+            field.getStyleClass().add("read-only");
         }
 
         grid.add(labelNode, 0, row);
@@ -292,43 +249,66 @@ public class CustomerProfileView {
 
     private VBox buildPasswordChangeSection() {
         VBox section = new VBox(15);
-        section.setStyle("-fx-background-color: white; " +
-                        "-fx-border-color: #E0E0E0; " +
-                        "-fx-border-radius: 8; " +
-                        "-fx-padding: 25;");
+        section.getStyleClass().add("profile-section");
+        section.setPadding(new Insets(25));
 
         Label sectionTitle = new Label("🔒 Change Password");
-        sectionTitle.setStyle("-fx-font-size: 16; -fx-font-weight: bold; -fx-text-fill: #333333;");
+        sectionTitle.getStyleClass().add("profile-section-title");
 
         GridPane grid = new GridPane();
         grid.setHgap(15);
         grid.setVgap(15);
 
-        PasswordField currentPwdField = addPasswordField(grid, 0, "Current Password:");
-        PasswordField newPwdField = addPasswordField(grid, 1, "New Password:");
-        PasswordField confirmPwdField = addPasswordField(grid, 2, "Confirm Password:");
+        HBox currentPwdContainer = addPasswordFieldWithToggle(grid, 0, "Current Password:");
+        HBox newPwdContainer = addPasswordFieldWithToggle(grid, 1, "New Password:");
+        HBox confirmPwdContainer = addPasswordFieldWithToggle(grid, 2, "Confirm Password:");
 
         Label note = new Label("Leave password fields empty to keep current password");
         note.setStyle("-fx-font-size: 10; -fx-text-fill: #888888; -fx-italic: true;");
 
-        grid.setUserData(new Object[]{currentPwdField, newPwdField, confirmPwdField});
+        grid.setUserData(new Object[]{currentPwdContainer, newPwdContainer, confirmPwdContainer});
         section.getChildren().addAll(sectionTitle, grid, note);
 
         return section;
     }
 
-    private PasswordField addPasswordField(GridPane grid, int row, String label) {
+    private HBox addPasswordFieldWithToggle(GridPane grid, int row, String label) {
         Label labelNode = new Label(label);
-        labelNode.setStyle("-fx-font-weight: bold; -fx-text-fill: #555555; -fx-font-size: 12;");
+        labelNode.getStyleClass().add("field-label");
 
-        PasswordField field = new PasswordField();
-        field.setPrefWidth(250);
-        field.setStyle("-fx-padding: 10; -fx-border-color: #E0E0E0; -fx-border-radius: 4; -fx-font-size: 11;");
+        HBox container = new HBox(10);
+        container.getStyleClass().add("password-field-container");
+
+        PasswordField passwordField = new PasswordField();
+        passwordField.getStyleClass().add("password-field");
+        passwordField.setPrefWidth(220);
+
+        TextField textField = new TextField();
+        textField.getStyleClass().add("text-field");
+        textField.setPrefWidth(220);
+        textField.setManaged(false);
+        textField.setVisible(false);
+
+        // Bind text properties
+        passwordField.textProperty().bindBidirectional(textField.textProperty());
+
+        Button toggleBtn = new Button("👁️");
+        toggleBtn.getStyleClass().add("button");
+        toggleBtn.setOnAction(e -> {
+            boolean show = textField.isVisible();
+            textField.setVisible(!show);
+            textField.setManaged(!show);
+            passwordField.setVisible(show);
+            passwordField.setManaged(show);
+            toggleBtn.setText(show ? "👁️" : "🙈");
+        });
+
+        container.getChildren().addAll(passwordField, textField, toggleBtn);
 
         grid.add(labelNode, 0, row);
-        grid.add(field, 1, row);
+        grid.add(container, 1, row);
 
-        return field;
+        return container;
     }
 
     private HBox buildButtonBar() {
@@ -337,54 +317,13 @@ public class CustomerProfileView {
         buttonBox.setPadding(new Insets(20, 0, 0, 0));
 
         Button saveBtn = new Button("💾 Save All Changes");
-        saveBtn.setStyle("-fx-padding: 12 30; " +
-                        "-fx-font-size: 13; " +
-                        "-fx-font-weight: bold; " +
-                        "-fx-background-color: #4CAF50; " +
-                        "-fx-text-fill: white; " +
-                        "-fx-border-radius: 5; " +
-                        "-fx-cursor: hand;");
+        saveBtn.getStyleClass().add("btn-success");
         saveBtn.setPrefWidth(180);
-        saveBtn.setOnMouseEntered(e -> saveBtn.setStyle("-fx-padding: 12 30; " +
-                                                       "-fx-font-size: 13; " +
-                                                       "-fx-font-weight: bold; " +
-                                                       "-fx-background-color: #45a049; " +
-                                                       "-fx-text-fill: white; " +
-                                                       "-fx-border-radius: 5; " +
-                                                       "-fx-cursor: hand;"));
-        saveBtn.setOnMouseExited(e -> saveBtn.setStyle("-fx-padding: 12 30; " +
-                                                      "-fx-font-size: 13; " +
-                                                      "-fx-font-weight: bold; " +
-                                                      "-fx-background-color: #4CAF50; " +
-                                                      "-fx-text-fill: white; " +
-                                                      "-fx-border-radius: 5; " +
-                                                      "-fx-cursor: hand;"));
+        saveBtn.setOnAction(e -> handleSaveAll());
 
         Button cancelBtn = new Button("❌ Cancel");
-        cancelBtn.setStyle("-fx-padding: 12 30; " +
-                          "-fx-font-size: 13; " +
-                          "-fx-font-weight: bold; " +
-                          "-fx-background-color: #9E9E9E; " +
-                          "-fx-text-fill: white; " +
-                          "-fx-border-radius: 5; " +
-                          "-fx-cursor: hand;");
+        cancelBtn.getStyleClass().add("btn-secondary");
         cancelBtn.setPrefWidth(180);
-        cancelBtn.setOnMouseEntered(e -> cancelBtn.setStyle("-fx-padding: 12 30; " +
-                                                           "-fx-font-size: 13; " +
-                                                           "-fx-font-weight: bold; " +
-                                                           "-fx-background-color: #808080; " +
-                                                           "-fx-text-fill: white; " +
-                                                           "-fx-border-radius: 5; " +
-                                                           "-fx-cursor: hand;"));
-        cancelBtn.setOnMouseExited(e -> cancelBtn.setStyle("-fx-padding: 12 30; " +
-                                                          "-fx-font-size: 13; " +
-                                                          "-fx-font-weight: bold; " +
-                                                          "-fx-background-color: #9E9E9E; " +
-                                                          "-fx-text-fill: white; " +
-                                                          "-fx-border-radius: 5; " +
-                                                          "-fx-cursor: hand;"));
-
-        saveBtn.setOnAction(e -> handleSaveAll());
         cancelBtn.setOnAction(e -> loadCustomerData());
 
         buttonBox.getChildren().addAll(saveBtn, cancelBtn);
@@ -457,7 +396,7 @@ public class CustomerProfileView {
                                 Object userData = gp.getUserData();
                                 if (userData instanceof Object[] arr) {
                                     if (arr.length == 4 && arr[0] instanceof TextField) personalData = arr;
-                                    else if (arr.length == 3 && arr[0] instanceof PasswordField) passwordData = arr;
+                                    else if (arr.length == 3 && arr[0] instanceof HBox) passwordData = arr;
                                 }
                             }
                         }
@@ -467,20 +406,28 @@ public class CustomerProfileView {
         }
 
         if (personalData != null && personalData.length >= 4) {
-            String fullName = ((TextField) personalData[0]).getText();
-            String phone = ((TextField) personalData[1]).getText();
-            String address = ((TextField) personalData[2]).getText();
-            String dob = ((TextField) personalData[3]).getText();
+            String email = ((TextField) personalData[0]).getText();
+            String fullName = ((TextField) personalData[1]).getText();
+            String phone = ((TextField) personalData[2]).getText();
+            String address = ((TextField) personalData[3]).getText();
 
-            if (!validateAndSavePersonal(fullName, phone, address, dob)) {
+            if (!validateAndSavePersonal(email, fullName, phone, address)) {
                 return;
             }
         }
 
         if (passwordData != null && passwordData.length == 3) {
-            String currentPwd = ((PasswordField) passwordData[0]).getText();
-            String newPwd = ((PasswordField) passwordData[1]).getText();
-            String confirmPwd = ((PasswordField) passwordData[2]).getText();
+            HBox currentContainer = (HBox) passwordData[0];
+            HBox newContainer = (HBox) passwordData[1];
+            HBox confirmContainer = (HBox) passwordData[2];
+
+            PasswordField currentPwdField = (PasswordField) currentContainer.getChildren().getFirst();
+            PasswordField newPwdField = (PasswordField) newContainer.getChildren().getFirst();
+            PasswordField confirmPwdField = (PasswordField) confirmContainer.getChildren().getFirst();
+
+            String currentPwd = currentPwdField.getText();
+            String newPwd = newPwdField.getText();
+            String confirmPwd = confirmPwdField.getText();
 
             if (!newPwd.isEmpty() && !validateAndSavePassword(currentPwd, newPwd, confirmPwd)) {
                 return;
@@ -491,24 +438,39 @@ public class CustomerProfileView {
         loadCustomerData();
     }
 
-    private boolean validateAndSavePersonal(String name, String phone, String address, String dob) {
-        if (name.isBlank()) {
-            AlertHelper.showError("Validation", "Full name is required.");
+    private boolean validateAndSavePersonal(String email, String name, String phone, String address) {
+        // Validate name (no numbers allowed)
+        String nameErr = ValidationUtil.validateName(name);
+        if (nameErr != null) {
+            AlertHelper.showError("Validation", nameErr);
             return false;
         }
-        if (phone.isBlank()) {
-            AlertHelper.showError("Validation", "Phone is required.");
+        
+        // Validate email
+        String emailErr = ValidationUtil.validateEmail(email);
+        if (emailErr != null) {
+            AlertHelper.showError("Validation", emailErr);
             return false;
         }
-        if (!phone.matches("\\d{7,15}")) {
-            AlertHelper.showError("Validation", "Phone must be 7–15 digits.");
+        
+        // Validate phone (numeric, exactly 10 characters)
+        String phoneErr = ValidationUtil.validatePhone(phone);
+        if (phoneErr != null) {
+            AlertHelper.showError("Validation", phoneErr);
+            return false;
+        }
+        
+        // Validate address
+        String addressErr = ValidationUtil.validateAddress(address);
+        if (addressErr != null) {
+            AlertHelper.showError("Validation", addressErr);
             return false;
         }
 
+        currentCustomer.setEmail(email.trim());
         currentCustomer.setName(name.trim());
         currentCustomer.setPhone(phone.trim());
         currentCustomer.setAddress(address.trim());
-        currentCustomer.setDateOfBirth(dob.trim());
 
         if (!customerController.update(currentCustomer)) {
             AlertHelper.showError("Error", "Failed to update profile.");
@@ -571,4 +533,3 @@ public class CustomerProfileView {
         return root;
     }
 }
-

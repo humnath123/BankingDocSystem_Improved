@@ -1,12 +1,14 @@
 package com.banking.view;
 
 import com.banking.controller.DocumentController;
+import com.banking.controller.TransactionController;
 import com.banking.dao.AccountDAO;
 import com.banking.dao.CustomerDAO;
 import com.banking.dao.DocumentDAO;
 import com.banking.model.Account;
 import com.banking.model.Customer;
 import com.banking.model.Document;
+import com.banking.model.Transaction;
 import com.banking.util.AlertHelper;
 import com.banking.util.Session;
 import javafx.geometry.Insets;
@@ -34,6 +36,7 @@ public class CustomerDashboardView {
     private AccountDAO accountDAO;
     private DocumentDAO documentDAO;
     private DocumentController documentController;
+    private TransactionController transactionController;
     private Customer currentCustomer;
 
     public CustomerDashboardView() {
@@ -41,6 +44,7 @@ public class CustomerDashboardView {
         accountDAO = new AccountDAO();
         documentDAO = new DocumentDAO();
         documentController = new DocumentController();
+        transactionController = new TransactionController();
         root = new BorderPane();
         root.getStyleClass().add("dashboard-root");
 
@@ -84,6 +88,10 @@ public class CustomerDashboardView {
         // Accounts Section
         VBox accountsSection = buildAccountsSection();
         mainContent.getChildren().add(accountsSection);
+
+        // Recent Transactions Section
+        VBox transactionsSection = buildRecentTransactionsSection();
+        mainContent.getChildren().add(transactionsSection);
 
         // Quick Actions
         HBox quickActions = buildQuickActions();
@@ -337,6 +345,91 @@ public class CustomerDashboardView {
         return card;
     }
 
+    private VBox buildRecentTransactionsSection() {
+        VBox section = new VBox(12);
+        section.getStyleClass().add("card");
+        section.setPadding(new Insets(20));
+
+        Label sectionTitle = new Label("📈 Recent Transactions");
+        sectionTitle.getStyleClass().add("section-title");
+
+        TableView<Transaction> tableView = new TableView<>();
+        tableView.getStyleClass().add("table-view");
+
+        TableColumn<Transaction, Integer> idCol = new TableColumn<>("ID");
+        idCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleIntegerProperty(cellData.getValue().getTransactionId()).asObject());
+        idCol.setPrefWidth(50);
+
+        TableColumn<Transaction, String> accountCol = new TableColumn<>("Account No");
+        accountCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().getAccountNumber()));
+        accountCol.setPrefWidth(120);
+
+        TableColumn<Transaction, String> typeCol = new TableColumn<>("Type");
+        typeCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().getTransactionType()));
+        typeCol.setPrefWidth(100);
+
+        TableColumn<Transaction, Double> amountCol = new TableColumn<>("Amount");
+        amountCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleDoubleProperty(cellData.getValue().getAmount()).asObject());
+        amountCol.setCellFactory(column -> new TableCell<Transaction, Double>() {
+            @Override
+            protected void updateItem(Double item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    getStyleClass().removeAll("deposit-amount", "withdrawal-amount");
+                } else {
+                    setText("Rs. " + String.format("%.2f", item));
+                    Transaction transaction = getTableView().getItems().get(getIndex());
+                    if ("Deposit".equals(transaction.getTransactionType())) {
+                        getStyleClass().add("deposit-amount");
+                    } else {
+                        getStyleClass().add("withdrawal-amount");
+                    }
+                }
+            }
+        });
+        amountCol.setPrefWidth(100);
+
+        TableColumn<Transaction, String> dateCol = new TableColumn<>("Date");
+        dateCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().getTransactionDate().toString()));
+        dateCol.setPrefWidth(120);
+
+        TableColumn<Transaction, String> descCol = new TableColumn<>("Description");
+        descCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().getDescription()));
+        descCol.setPrefWidth(200);
+
+        tableView.getColumns().addAll(idCol, accountCol, typeCol, amountCol, dateCol, descCol);
+
+        try {
+            if (currentCustomer != null) {
+                List<Account> accounts = accountDAO.getAccountsByCustomer(currentCustomer.getCustomerId());
+                List<Transaction> allTransactions = new java.util.ArrayList<>();
+                for (Account account : accounts) {
+                    List<Transaction> txns = transactionController.getTransactionsByAccount(account.getAccountNumber());
+                    allTransactions.addAll(txns);
+                }
+                // Sort by date descending and take top 5
+                allTransactions.sort((t1, t2) -> t2.getTransactionDate().compareTo(t1.getTransactionDate()));
+                List<Transaction> recentTransactions = allTransactions.stream().limit(5).toList();
+
+                tableView.getItems().addAll(recentTransactions);
+
+                if (recentTransactions.isEmpty()) {
+                    Label noTransactions = new Label("No transactions available");
+                    noTransactions.getStyleClass().add("hint-text");
+                    section.getChildren().addAll(sectionTitle, noTransactions);
+                    return section;
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error loading transactions: " + e.getMessage());
+        }
+
+        section.getChildren().addAll(sectionTitle, tableView);
+        return section;
+    }
+
+
     private HBox buildQuickActions() {
         HBox actions = new HBox(15);
         actions.getStyleClass().add("card");
@@ -452,4 +545,3 @@ public class CustomerDashboardView {
         return root;
     }
 }
-

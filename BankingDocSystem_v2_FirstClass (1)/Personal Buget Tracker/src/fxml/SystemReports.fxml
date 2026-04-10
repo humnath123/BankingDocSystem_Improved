@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" spacing="15" style="-fx-padding: 20;">
+    <Label text="System Reports" style="-fx-font-size: 18;"/>
+    <HBox spacing="20">
+        <VBox style="-fx-border-color: #E0E0E0; -fx-padding: 20;">
+            <Label text="Total System Income" style="-fx-font-size: 12;"/>
+            <Label text="0.00" style="-fx-font-size: 24;"/>
+        </VBox>
+        <VBox style="-fx-border-color: #E0E0E0; -fx-padding: 20;">
+            <Label text="Total System Expenses" style="-fx-font-size: 12;"/>
+            <Label text="0.00" style="-fx-font-size: 24;"/>
+        </VBox>
+    </HBox>
+</VBox>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" spacing="15" style="-fx-padding: 20;">
+    <Label text="User Activity" style="-fx-font-size: 18;"/>
+    <TableView prefHeight="400">
+        <columns>
+            <TableColumn text="Username" prefWidth="120"/>
+            <TableColumn text="Activity" prefWidth="300"/>
+            <TableColumn text="Date" prefWidth="150"/>
+        </columns>
+    </TableView>
+</VBox>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.budgettracker.controller.TransactionController" alignment="CENTER" spacing="10" prefWidth="400" prefHeight="300">
+    <Label text="Transaction Form" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+    <TextField fx:id="amountField" promptText="Amount"/>
+    <ComboBox fx:id="typeCombo" promptText="Type"/>
+    <ComboBox fx:id="categoryCombo" promptText="Category"/>
+    <DatePicker fx:id="datePicker"/>
+    <TextArea fx:id="noteArea" promptText="Note"/>
+    <HBox spacing="10">
+        <Button text="Save" onAction="#handleSave"/>
+        <Button text="Cancel" onAction="#handleCancel"/>
+    </HBox>
+    <Label fx:id="errorLabel" textFill="RED"/>
+</VBox>

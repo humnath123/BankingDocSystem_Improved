@@ -1,0 +1,142 @@
+/* Style for Personal Budget Tracker Application */
+
+.root {
+    -fx-font-family: "Segoe UI", "Helvetica";
+    -fx-font-size: 12;
+}
+
+/* Main Colors */
+.primary-button {
+    -fx-background-color: #2196F3;
+    -fx-text-fill: white;
+    -fx-font-size: 13;
+    -fx-padding: 8 20;
+    -fx-border-radius: 4;
+}
+
+.primary-button:hover {
+    -fx-background-color: #1976D2;
+}
+
+.danger-button {
+    -fx-background-color: #F44336;
+    -fx-text-fill: white;
+    -fx-font-size: 13;
+    -fx-padding: 8 20;
+}
+
+.danger-button:hover {
+    -fx-background-color: #D32F2F;
+}
+
+.success-button {
+    -fx-background-color: #4CAF50;
+    -fx-text-fill: white;
+    -fx-font-size: 13;
+    -fx-padding: 8 20;
+}
+
+.success-button:hover {
+    -fx-background-color: #388E3C;
+}
+
+.text-field {
+    -fx-border-color: #BDBDBD;
+    -fx-border-radius: 4;
+    -fx-padding: 8;
+    -fx-font-size: 12;
+}
+
+.text-field:focused {
+    -fx-border-color: #2196F3;
+    -fx-focus-color: #2196F3;
+}
+
+.password-field {
+    -fx-border-color: #BDBDBD;
+    -fx-border-radius: 4;
+    -fx-padding: 8;
+}
+
+.password-field:focused {
+    -fx-border-color: #2196F3;
+}
+
+.combo-box {
+    -fx-border-color: #BDBDBD;
+    -fx-border-radius: 4;
+}
+
+.combo-box:focused {
+    -fx-border-color: #2196F3;
+}
+
+.table-view {
+    -fx-border-color: #E0E0E0;
+    -fx-font-size: 12;
+}
+
+.table-view .column-header {
+    -fx-background-color: #F5F5F5;
+    -fx-padding: 8;
+}
+
+.table-view:focused {
+    -fx-border-color: #2196F3;
+}
+
+.title {
+    -fx-font-size: 24;
+    -fx-font-weight: bold;
+    -fx-text-fill: #212121;
+}
+
+.subtitle {
+    -fx-font-size: 16;
+    -fx-font-weight: bold;
+    -fx-text-fill: #424242;
+}
+
+.header-pane {
+    -fx-background-color: #2196F3;
+    -fx-text-fill: white;
+    -fx-padding: 15;
+}
+
+.header-label {
+    -fx-text-fill: white;
+    -fx-font-size: 14;
+    -fx-font-weight: bold;
+}
+
+.info-label {
+    -fx-text-fill: #666666;
+    -fx-font-size: 12;
+}
+
+.error-label {
+    -fx-text-fill: #F44336;
+    -fx-font-size: 12;
+}
+
+.success-label {
+    -fx-text-fill: #4CAF50;
+    -fx-font-size: 12;
+}
+
+.dashboard-card {
+    -fx-border-color: #E0E0E0;
+    -fx-border-radius: 4;
+    -fx-padding: 15;
+    -fx-background-color: white;
+}
+
+.status-bar {
+    -fx-background-color: #F5F5F5;
+    -fx-padding: 10;
+    -fx-border-color: #E0E0E0;
+}
+
+.progress-bar {
+    -fx-control-inner-background: #E0E0E0;
+}

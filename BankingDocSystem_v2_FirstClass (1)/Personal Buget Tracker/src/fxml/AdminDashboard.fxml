@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.budgettracker.controller.AdminDashboardController">
+    <top>
+        <VBox style="-fx-background-color: #D32F2F; -fx-padding: 15;" spacing="10">
+            <HBox spacing="20" style="-fx-alignment: center-left;">
+                <Label text="Admin Dashboard" style="-fx-text-fill: white; -fx-font-size: 20; -fx-font-weight: bold;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="adminLabel" style="-fx-text-fill: white;"/>
+                <Button text="Logout" onAction="#handleLogout" style="-fx-background-color: white; -fx-text-fill: #D32F2F;"/>
+            </HBox>
+        </VBox>
+    </top>
+    <left>
+        <VBox style="-fx-background-color: #F5F5F5; -fx-border-color: #E0E0E0; -fx-padding: 15;" spacing="10">
+            <Button text="Dashboard" style="-fx-min-width: 180;" onAction="#showDashboard"/>
+            <Button text="Manage Users" style="-fx-min-width: 180;" onAction="#showManageUsers"/>
+            <Button text="User Activity" style="-fx-min-width: 180;" onAction="#showUserActivity"/>
+            <Button text="System Reports" style="-fx-min-width: 180;" onAction="#showSystemReports"/>
+            <Region VBox.vgrow="ALWAYS"/>
+        </VBox>
+    </left>
+    <center>
+        <StackPane fx:id="contentPane"/>
+    </center>
+</BorderPane>
